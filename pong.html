@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+        }
+        canvas {
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="pongCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Variables del juego
+        const paddleWidth = 10, paddleHeight = 100;
+        let ballRadius = 10;
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballSpeedX = 5, ballSpeedY = 5;
+
+        let leftPaddleY = canvas.height / 2 - paddleHeight / 2;
+        let rightPaddleY = canvas.height / 2 - paddleHeight / 2;
+
+        let leftPaddleSpeed = 0, rightPaddleSpeed = 0;
+
+        // Control de los paddles
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowUp") {
+                rightPaddleSpeed = -5;
+            } else if (event.key === "ArrowDown") {
+                rightPaddleSpeed = 5;
+            }
+            if (event.key === "w") {
+                leftPaddleSpeed = -5;
+            } else if (event.key === "s") {
+                leftPaddleSpeed = 5;
+            }
+        });
+
+        document.addEventListener("keyup", (event) => {
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                rightPaddleSpeed = 0;
+            }
+            if (event.key === "w" || event.key === "s") {
+                leftPaddleSpeed = 0;
+            }
+        });
+
+        // Función para dibujar la pelota
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Función para dibujar los paddles
+        function drawPaddles() {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
+            ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+        }
+
+        // Función para mover la pelota
+        function moveBall() {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Rebote en el borde superior e inferior
+            if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Rebote en los paddles
+            if (ballX - ballRadius < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            if (ballX + ballRadius > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // Puntos
+            if (ballX - ballRadius < 0 || ballX + ballRadius > canvas.width) {
+                // Reiniciar la pelota
+                ballX = canvas.width / 2;
+                ballY = canvas.height / 2;
+                ballSpeedX = -ballSpeedX; // Cambiar dirección
+            }
+        }
+
+        // Función para mover los paddles
+        function movePaddles() {
+            leftPaddleY += leftPaddleSpeed;
+            rightPaddleY += rightPaddleSpeed;
+
+            // Limitar el movimiento de los paddles para que no se salgan de la pantalla
+            if (leftPaddleY < 0) leftPaddleY = 0;
+            if (leftPaddleY + paddleHeight > canvas.height) leftPaddleY = canvas.height - paddleHeight;
+            if (rightPaddleY < 0) rightPaddleY = 0;
+            if (rightPaddleY + paddleHeight > canvas.height) rightPaddleY = canvas.height - paddleHeight;
+        }
+
+        // Función para dibujar el marcador
+        function drawScore() {
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("Pong", canvas.width / 2 - 50, 40);
+        }
+
+        // Función principal para actualizar el juego
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            moveBall();
+            movePaddles();
+            drawBall();
+            drawPaddles();
+            drawScore();
+            requestAnimationFrame(updateGame);
+        }
+
+        // Iniciar el juego
+        updateGame();
+    </script>
+</body>
+</html>
